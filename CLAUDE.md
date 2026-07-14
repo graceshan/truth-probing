@@ -6,3 +6,4 @@ everything else runs locally on CPU from saved .npy files in data/activations/ (
 - Probes: LogisticRegression(max_iter=2000, C=0.1); split indices once, reuse across layers.
 - Never commit *.npy files. Figures go in figures/, saved at dpi=150.
 - Datasets: geometry-of-truth repo CSVs, columns `statement`, `label` (1=true).
+- model: qwen2.5-1.5b, base not instruct, loaded via HF handoff
