@@ -6,4 +6,8 @@ everything else runs locally on CPU from saved .npy files in data/activations/ (
 - Probes: LogisticRegression(max_iter=2000, C=0.1); split indices once, reuse across layers.
 - Never commit *.npy files. Figures go in figures/, saved at dpi=150.
 - Datasets: geometry-of-truth repo CSVs, columns `statement`, `label` (1=true).
-- model: qwen2.5-1.5b, base not instruct, loaded via HF handoff
+- Environment: local VS Code + .venv for ALL analysis (CPU, from saved .npy).
+  GPU extraction only runs on Colab via notebooks/extract_colab.ipynb.
+  NEVER load qwen locally — laptop RAM can't take it; work from data/activations/.
+- Activations live in data/activations/ locally (gitignored), backed up on Drive.
+- Model locked: qwen2.5-1.5b base, loaded via HF handoff + from_pretrained_no_processing, fp16.
