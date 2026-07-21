@@ -35,6 +35,18 @@ def train_layer_probe(
     return probe, test_acc
 
 
+def fit_probe(X: np.ndarray, labels: np.ndarray) -> LogisticRegression:
+    """Fit a probe on all given examples (no held-out split).
+
+    For cross-dataset transfer, where the test set is a different dataset
+    entirely, so there's no need to hold out part of the training set.
+    """
+    probe = LogisticRegression(max_iter=2000, C=0.1)
+    probe.fit(X, labels)
+    assert list(probe.classes_) == [0, 1]
+    return probe
+
+
 def normalized_coef(probe: LogisticRegression) -> np.ndarray:
     """Unit-norm probe direction, [d_model]. Sign already positive = true (see module docstring)."""
     coef = probe.coef_[0]
