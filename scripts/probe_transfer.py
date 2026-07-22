@@ -5,6 +5,7 @@ is Spanish-English translation statements).
 """
 
 import argparse
+import os
 
 import matplotlib.pyplot as plt
 
@@ -76,6 +77,7 @@ plt.grid(alpha=0.3)
 plt.legend()
 plt.tight_layout()
 
-out_path = f"figures/{DATASET_A}_{DATASET_B}_transfer.png"
+os.makedirs("figures/transfer", exist_ok=True)
+out_path = f"figures/transfer/{DATASET_A}_{DATASET_B}_transfer.png"
 plt.savefig(out_path, dpi=150)
 print(f"saved {out_path}")

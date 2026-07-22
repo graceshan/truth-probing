@@ -62,6 +62,7 @@ for dataset in args.datasets:
     plt.legend()
     plt.tight_layout()
 
-    out_path = f"figures/{dataset}_control_probe_accuracy.png"
+    os.makedirs("figures/control", exist_ok=True)
+    out_path = f"figures/control/{dataset}_control_probe_accuracy.png"
     plt.savefig(out_path, dpi=150)
     print(f"saved {out_path}")
