@@ -1,7 +1,10 @@
 """Cross-dataset transfer: train a probe per layer on one dataset, test on
-another, to check whether the truth direction generalizes across surface
-form (cities are affirmed statements, neg_cities negates them).
+another, to check whether the truth direction generalizes across datasets
+(e.g. cities are affirmed statements, neg_cities negates them; sp_en_trans
+is Spanish-English translation statements).
 """
+
+import argparse
 
 import matplotlib.pyplot as plt
 
@@ -9,11 +12,16 @@ from src.data import load_activations
 from src.probes import fit_probe, split_indices, train_layer_probe
 
 MODEL_NAME = "Qwen2.5-1.5B"
-DATASET_A = "cities"
-DATASET_B = "neg_cities"
 
 BLUE = "#2a78d6"
 GREEN = "#008300"
+
+parser = argparse.ArgumentParser()
+parser.add_argument("dataset_a", nargs="?", default="cities")
+parser.add_argument("dataset_b", nargs="?", default="neg_cities")
+args = parser.parse_args()
+DATASET_A = args.dataset_a
+DATASET_B = args.dataset_b
 
 acts_a, labels_a = load_activations(DATASET_A)
 acts_b, labels_b = load_activations(DATASET_B)
