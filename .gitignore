@@ -222,6 +222,7 @@ __marimo__/
 *.pt
 *.safetensors
 data/activations/
+geometry-of-truth/
 .env
 hf_token.txt
 .DS_Store
