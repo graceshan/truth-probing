@@ -26,6 +26,17 @@ def load_model(device: str | None = None) -> HookedTransformer:
     )
 
 
+def statement_logprob(model: HookedTransformer, statement: str) -> float:
+    """Total log-probability the model assigns to `statement`'s tokens (teacher-forced)."""
+    tokens = model.to_tokens(statement)
+    with torch.no_grad():
+        logits = model(tokens)
+    logprobs = torch.log_softmax(logits.float(), dim=-1)
+    tgt = tokens[0, 1:]  # predict token i+1 from position i
+    lp = logprobs[0, :-1].gather(-1, tgt.unsqueeze(-1)).squeeze(-1)
+    return lp.sum().item()
+
+
 def extract_acts(model: HookedTransformer, texts: list[str]) -> np.ndarray:
     """Resid_post at the last token, every layer, for each text.
 
