@@ -20,7 +20,7 @@ CONNECTIVE_STYLE = {"and": "-", "or": "--"}
 # and/or data-line color matches its own truth-conditional reference line's
 # hue family, so "does this curve reach its target" reads at a glance
 CONNECTIVE_COLORS = {"and": "#e34948", "or": "#008300"}
-DISCUSSION_LAYERS = (14, 22)  # layer range to highlight in plots
+DISCUSSION_LAYERS = (10, 16)  # layer range to highlight in plots
 
 acts_cities, labels_cities = load_activations("cities")
 acts_compound, _ = load_activations("compound_cities")
