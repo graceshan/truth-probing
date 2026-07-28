@@ -21,6 +21,8 @@ B1_COLOR = "#2a78d6"  # conjunct a
 B2_COLOR = "#008300"  # conjunct b
 CONNECTIVE_COLORS = {"and": "#e34948", "or": "#1baf7a"}
 COEF_STYLE = {"b1": "-", "b2": "--"}
+COEF_MARKER = {"b1": "o", "b2": "s"}
+PLOT_START_LAYER = 5  # layers 0-4: cities probe hasn't formed yet, numbers unstable
 
 acts_cities, labels_cities = load_activations("cities")
 acts_compound, _ = load_activations("compound_cities")
@@ -100,9 +102,15 @@ print(ratio_summary)
 
 os.makedirs("figures", exist_ok=True)
 
+# plots start at PLOT_START_LAYER (the full 0-27 range is still in the CSVs
+# above) -- early layers are pre-signal and just add unstable noise to the
+# view
+plot_df = all_df[all_df["layer"] >= PLOT_START_LAYER]
+plot_by_conn_df = by_conn_df[by_conn_df["layer"] >= PLOT_START_LAYER]
+
 plt.figure(figsize=(9, 6))
-plt.plot(all_df["layer"], all_df["b1"], color=B1_COLOR, marker="o", label="b1 (conjunct a)")
-plt.plot(all_df["layer"], all_df["b2"], color=B2_COLOR, marker="o", label="b2 (conjunct b)")
+plt.plot(plot_df["layer"], plot_df["b1"], color=B1_COLOR, marker="o", label="b1 (conjunct a)")
+plt.plot(plot_df["layer"], plot_df["b2"], color=B2_COLOR, marker="o", label="b2 (conjunct b)")
 plt.axhline(0, linestyle="--", color="gray", label="zero")
 plt.xlabel("layer")
 plt.ylabel("regression coefficient")
@@ -115,7 +123,7 @@ plt.savefig(out_path, dpi=150, bbox_inches="tight")
 print(f"saved {out_path}")
 
 plt.figure(figsize=(9, 6))
-plt.plot(all_df["layer"], all_df["r2"], color=B1_COLOR, marker="o")
+plt.plot(plot_df["layer"], plot_df["r2"], color=B1_COLOR, marker="o")
 plt.xlabel("layer")
 plt.ylabel("R^2")
 plt.title(f"conjunct-score regression fit ({MODEL_NAME})")
@@ -127,9 +135,15 @@ print(f"saved {out_path}")
 
 plt.figure(figsize=(9, 6))
 for conn, color in CONNECTIVE_COLORS.items():
-    sub = by_conn_df[by_conn_df["connective"] == conn]
-    plt.plot(sub["layer"], sub["b1"], color=color, linestyle=COEF_STYLE["b1"], marker="o", label=f"b1, {conn}")
-    plt.plot(sub["layer"], sub["b2"], color=color, linestyle=COEF_STYLE["b2"], marker="o", label=f"b2, {conn}")
+    sub = plot_by_conn_df[plot_by_conn_df["connective"] == conn]
+    plt.plot(
+        sub["layer"], sub["b1"], color=color, linestyle=COEF_STYLE["b1"], marker=COEF_MARKER["b1"],
+        label=f"b1, {conn}",
+    )
+    plt.plot(
+        sub["layer"], sub["b2"], color=color, linestyle=COEF_STYLE["b2"], marker=COEF_MARKER["b2"],
+        label=f"b2, {conn}",
+    )
 plt.axhline(0, linestyle=":", color="gray", label="zero")
 plt.xlabel("layer")
 plt.ylabel("regression coefficient")
