@@ -17,6 +17,9 @@ PALETTE = ["#2a78d6", "#008300", "#e87ba4", "#eda100", "#1baf7a", "#eb6834", "#4
 PATTERNS = ["TT", "TF", "FT", "FF"]
 PATTERN_COLORS = {"TT": "#2a78d6", "TF": "#008300", "FT": "#e87ba4", "FF": "#eda100"}
 CONNECTIVE_STYLE = {"and": "-", "or": "--"}
+# and/or data-line color matches its own truth-conditional reference line's
+# hue family, so "does this curve reach its target" reads at a glance
+CONNECTIVE_COLORS = {"and": "#e34948", "or": "#008300"}
 DISCUSSION_LAYERS = (14, 22)  # layer range to highlight in plots
 
 acts_cities, labels_cities = load_activations("cities")
@@ -130,5 +133,118 @@ plt.legend(loc="upper left", bbox_to_anchor=(1.02, 1), borderaxespad=0, fontsize
 plt.tight_layout()
 
 out_path = "figures/transfer/compound_scores_centered.png"
+plt.savefig(out_path, dpi=150, bbox_inches="tight")
+print(f"saved {out_path}")
+
+
+def cell_mean(conn, pat, L):
+    return group_means.loc[L, f"{conn}-{pat}"]
+
+
+MIN_SPREAD = 0.1  # minimum |TT - FF| to trust the ratio; below this the denominator is unstable
+
+
+def rel_position(conn, L):
+    """Where do the mixed patterns sit on the FF(0) -> TT(1) scale?"""
+    tt = cell_mean(conn, "TT", L)
+    ff = cell_mean(conn, "FF", L)
+    if abs(tt - ff) < MIN_SPREAD:
+        return np.nan
+    mixed = (cell_mean(conn, "TF", L) + cell_mean(conn, "FT", L)) / 2
+    return (mixed - ff) / (tt - ff)
+
+
+# normalized position: each connective is self-scaled to its own FF->TT
+# range, so this neutralizes the AND/OR level difference automatically --
+# no error bars, since propagating uncertainty through a ratio of
+# differences needs the delta method and wasn't asked for here.
+rel_pos = pd.DataFrame({conn: [rel_position(conn, L) for L in layers] for conn in ["and", "or"]}, index=layers)
+rel_pos.index.name = "layer"
+rel_pos.to_csv(f"{results_dir}/compound_relative_position.csv")
+print(rel_pos)
+print(f"saved {results_dir}/compound_relative_position.csv")
+
+plt.figure(figsize=(9, 6))
+for conn in ["and", "or"]:
+    plt.plot(layers, rel_pos[conn], color=CONNECTIVE_COLORS[conn], marker="o", label=f'"{conn}"')
+plt.axvspan(*DISCUSSION_LAYERS, color="gray", alpha=0.12, linewidth=0)
+plt.axhline(0.5, linestyle="--", color="gray", label="association-counting prediction")
+plt.axhline(0.0, linestyle=":", color="red", label="truth-conditional: AND")
+plt.axhline(1.0, linestyle=":", color="green", label="truth-conditional: OR")
+plt.ylim(-0.1, 1.1)
+plt.xlabel("layer")
+plt.ylabel("mixed patterns' position (0 = FF level, 1 = TT level)")
+plt.title(f"normalized position of mixed (TF/FT) patterns ({MODEL_NAME})")
+plt.grid(alpha=0.3)
+plt.legend(loc="upper left", bbox_to_anchor=(1.02, 1), borderaxespad=0, fontsize=8)
+plt.tight_layout()
+
+out_path = "figures/transfer/compound_relative_position.png"
+plt.savefig(out_path, dpi=150, bbox_inches="tight")
+print(f"saved {out_path}")
+
+# companion 1: spread (TT - FF) per connective -- quantifies the AND > OR
+# gap seen in the raw plots directly, with propagated SEM (independent
+# groups, so combined SEM is sqrt of summed squared SEMs).
+spread = pd.DataFrame(
+    {conn: group_means[f"{conn}-TT"] - group_means[f"{conn}-FF"] for conn in ["and", "or"]}, index=layers
+)
+spread_sem = pd.DataFrame(
+    {
+        conn: np.sqrt(group_sems[f"{conn}-TT"] ** 2 + group_sems[f"{conn}-FF"] ** 2)
+        for conn in ["and", "or"]
+    },
+    index=layers,
+)
+spread.index.name = "layer"
+spread.to_csv(f"{results_dir}/compound_spread.csv")
+print(f"saved {results_dir}/compound_spread.csv")
+
+plt.figure(figsize=(7, 5))
+for conn in ["and", "or"]:
+    mean, sem = spread[conn], spread_sem[conn]
+    plt.plot(layers, mean, color=CONNECTIVE_COLORS[conn], marker="o", label=f'"{conn}"')
+    plt.fill_between(layers, mean - sem, mean + sem, color=CONNECTIVE_COLORS[conn], alpha=0.15, linewidth=0)
+plt.axvspan(*DISCUSSION_LAYERS, color="gray", alpha=0.12, linewidth=0)
+plt.axhline(0, linestyle="--", color="gray")
+plt.xlabel("layer")
+plt.ylabel("TT - FF (z, cities scale)")
+plt.title(f"spread between TT and FF cells, per connective ({MODEL_NAME})")
+plt.grid(alpha=0.3)
+plt.legend(loc="upper left", bbox_to_anchor=(1.02, 1), borderaxespad=0, fontsize=8)
+plt.tight_layout()
+
+out_path = "figures/transfer/compound_spread.png"
+plt.savefig(out_path, dpi=150, bbox_inches="tight")
+print(f"saved {out_path}")
+
+# companion 2: FT - TF pooled across connectives -- a conjunct-order effect
+# (does the model weight the second conjunct differently than the first?),
+# with a zero line to read off where it crosses from one direction to the
+# other over layers.
+ft_mean, ft_sem = mean_and_sem((meta["pattern"] == "FT").values)
+tf_mean, tf_sem = mean_and_sem((meta["pattern"] == "TF").values)
+order_effect = pd.Series(ft_mean - tf_mean, index=layers, name="ft_minus_tf")
+order_effect_sem = pd.Series(np.sqrt(ft_sem**2 + tf_sem**2), index=layers)
+order_effect.index.name = "layer"
+order_effect.to_csv(f"{results_dir}/compound_order_effect.csv")
+print(f"saved {results_dir}/compound_order_effect.csv")
+
+plt.figure(figsize=(7, 5))
+plt.plot(layers, order_effect, color=PALETTE[0], marker="o", label="FT - TF")
+plt.fill_between(
+    layers, order_effect - order_effect_sem, order_effect + order_effect_sem,
+    color=PALETTE[0], alpha=0.15, linewidth=0,
+)
+plt.axvspan(*DISCUSSION_LAYERS, color="gray", alpha=0.12, linewidth=0)
+plt.axhline(0, linestyle="--", color="gray", label="no order effect")
+plt.xlabel("layer")
+plt.ylabel("FT - TF (z, cities scale), pooled across and/or")
+plt.title(f"conjunct-order effect: FT vs TF, pooled across connectives ({MODEL_NAME})")
+plt.grid(alpha=0.3)
+plt.legend(loc="upper left", bbox_to_anchor=(1.02, 1), borderaxespad=0, fontsize=8)
+plt.tight_layout()
+
+out_path = "figures/transfer/compound_order_effect.png"
 plt.savefig(out_path, dpi=150, bbox_inches="tight")
 print(f"saved {out_path}")
