@@ -16,6 +16,8 @@ MODEL_NAME = "Qwen2.5-1.5B"
 PALETTE = ["#2a78d6", "#008300", "#e87ba4", "#eda100", "#1baf7a", "#eb6834", "#4a3aa7", "#e34948"]
 PATTERNS = ["TT", "TF", "FT", "FF"]
 PATTERN_COLORS = {"TT": "#2a78d6", "TF": "#008300", "FT": "#e87ba4", "FF": "#eda100"}
+CONNECTIVE_STYLE = {"and": "-", "or": "--"}
+DISCUSSION_LAYERS = (14, 22)  # layer range to highlight in plots
 
 acts_cities, labels_cities = load_activations("cities")
 acts_compound, _ = load_activations("compound_cities")
@@ -67,12 +69,12 @@ plt.xlabel("layer")
 plt.ylabel("standardized probe score")
 plt.title(f"cities-trained probe applied to compound and/or statements ({MODEL_NAME})")
 plt.grid(alpha=0.3)
-plt.legend(ncol=2, fontsize=8)
+plt.legend(loc="upper left", bbox_to_anchor=(1.02, 1), borderaxespad=0, fontsize=8)
 plt.tight_layout()
 
 os.makedirs("figures/transfer", exist_ok=True)
 out_path = "figures/transfer/cities_probe_on_compound.png"
-plt.savefig(out_path, dpi=150)
+plt.savefig(out_path, dpi=150, bbox_inches="tight")
 print(f"saved {out_path}")
 
 # one panel per connective, sharing a y-axis, so the two profiles (how score
@@ -82,18 +84,51 @@ fig, axes = plt.subplots(1, 2, figsize=(12, 4.5), sharey=True)
 for ax, conn in zip(axes, ["and", "or"]):
     for pat in PATTERNS:
         m = ((meta.connective == conn) & (meta.pattern == pat)).values
-        mean, sem = mean_and_sem(m)
+        mean, _ = mean_and_sem(m)
         ax.plot(layers, mean, color=PATTERN_COLORS[pat], marker="o", label=pat)
-        ax.fill_between(layers, mean - sem, mean + sem, color=PATTERN_COLORS[pat], alpha=0.15, linewidth=0)
+    ax.axvspan(*DISCUSSION_LAYERS, color="gray", alpha=0.12, linewidth=0)
     ax.axhline(0, color="gray", linestyle="--", linewidth=1)
     ax.set_title(f'"{conn}" compounds')
     ax.set_xlabel("layer")
     ax.grid(alpha=0.3)
 axes[0].set_ylabel("mean probe score (z, cities scale)")
-axes[0].legend(title="conjunct pattern")
+handles, labels = axes[0].get_legend_handles_labels()
+fig.legend(handles, labels, title="conjunct pattern", loc="center left", bbox_to_anchor=(1.0, 0.5))
 fig.suptitle(f"cities-trained probe on compound statements, by pattern ({MODEL_NAME})")
 fig.tight_layout()
 
 out_path = "figures/transfer/compound_scores_by_layer.png"
-fig.savefig(out_path, dpi=150)
+fig.savefig(out_path, dpi=150, bbox_inches="tight")
+print(f"saved {out_path}")
+
+# center within connective: subtract each connective's own (per-layer) mean
+# across its four pattern cells, isolating the pattern *shape* from the
+# connective's overall level, then overlay both profiles on one axes --
+# color = pattern, linestyle = connective, so same-color solid vs dashed
+# lines show directly whether and/or shape the same way.
+centered = group_means.copy()
+for conn in ["and", "or"]:
+    cols = [f"{conn}-{p}" for p in PATTERNS]
+    centered[cols] = group_means[cols].sub(group_means[cols].mean(axis=1), axis=0)
+centered.to_csv(f"{results_dir}/cities_probe_scores_by_group_centered.csv")
+print(f"saved {results_dir}/cities_probe_scores_by_group_centered.csv")
+
+plt.figure(figsize=(9, 6))
+for conn, linestyle in CONNECTIVE_STYLE.items():
+    for pat in PATTERNS:
+        col = f"{conn}-{pat}"
+        mean, sem = centered[col], group_sems[col]
+        plt.plot(layers, mean, color=PATTERN_COLORS[pat], linestyle=linestyle, marker="o", label=col)
+        plt.fill_between(layers, mean - sem, mean + sem, color=PATTERN_COLORS[pat], alpha=0.15, linewidth=0)
+plt.axvspan(*DISCUSSION_LAYERS, color="gray", alpha=0.12, linewidth=0)
+plt.axhline(0, linestyle=":", color="gray", label="connective mean")
+plt.xlabel("layer")
+plt.ylabel("standardized probe score, centered within connective")
+plt.title(f"cities-trained probe on compound statements, centered within connective ({MODEL_NAME})")
+plt.grid(alpha=0.3)
+plt.legend(loc="upper left", bbox_to_anchor=(1.02, 1), borderaxespad=0, fontsize=8)
+plt.tight_layout()
+
+out_path = "figures/transfer/compound_scores_centered.png"
+plt.savefig(out_path, dpi=150, bbox_inches="tight")
 print(f"saved {out_path}")
