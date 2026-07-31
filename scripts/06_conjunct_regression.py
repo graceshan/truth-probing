@@ -3,7 +3,7 @@ just linearly combine the two conjuncts' individually-probed truth scores?
 
 Self-contained per-layer analysis. Reuses src.probes for the fit (same
 train/test split convention as the rest of the project) but does not
-import from or modify scripts/probe_compound_transfer.py.
+import from or modify scripts/05_compound_analysis.py.
 """
 
 import os
@@ -88,11 +88,11 @@ all_df = pd.DataFrame(all_rows)
 by_conn_df = pd.DataFrame(and_rows + or_rows)
 by_conn_df["b2_over_b1"] = by_conn_df["b2"] / by_conn_df["b1"]
 
-os.makedirs("results", exist_ok=True)
-all_df.to_csv("results/conjunct_regression.csv", index=False)
-by_conn_df.to_csv("results/conjunct_regression_by_connective.csv", index=False)
+os.makedirs("results/compound_cities", exist_ok=True)
+all_df.to_csv("results/compound_cities/conjunct_regression.csv", index=False)
+by_conn_df.to_csv("results/compound_cities/conjunct_regression_by_connective.csv", index=False)
 print(all_df)
-print("saved results/conjunct_regression.csv and results/conjunct_regression_by_connective.csv")
+print("saved results/compound_cities/conjunct_regression.csv and conjunct_regression_by_connective.csv")
 
 # mean b2/b1 ratio per connective, over layers -- the direct numeric answer
 # to "does the weighting differ by connective"
@@ -100,7 +100,7 @@ ratio_summary = by_conn_df.groupby("connective")["b2_over_b1"].mean()
 print("\nmean b2/b1 ratio by connective (across all layers):")
 print(ratio_summary)
 
-os.makedirs("figures", exist_ok=True)
+os.makedirs("figures/compound_cities", exist_ok=True)
 
 # plots start at PLOT_START_LAYER (the full 0-27 range is still in the CSVs
 # above) -- early layers are pre-signal and just add unstable noise to the
@@ -118,7 +118,7 @@ plt.title(f"conjunct-score regression coefficients ({MODEL_NAME})")
 plt.grid(alpha=0.3)
 plt.legend(loc="upper left", bbox_to_anchor=(1.02, 1), borderaxespad=0, fontsize=8)
 plt.tight_layout()
-out_path = "figures/conjunct_regression_coefficients.png"
+out_path = "figures/compound_cities/conjunct_regression_coefficients.png"
 plt.savefig(out_path, dpi=150, bbox_inches="tight")
 print(f"saved {out_path}")
 
@@ -129,7 +129,7 @@ plt.ylabel("R^2")
 plt.title(f"conjunct-score regression fit ({MODEL_NAME})")
 plt.grid(alpha=0.3)
 plt.tight_layout()
-out_path = "figures/conjunct_regression_r2.png"
+out_path = "figures/compound_cities/conjunct_regression_r2.png"
 plt.savefig(out_path, dpi=150, bbox_inches="tight")
 print(f"saved {out_path}")
 
@@ -151,6 +151,6 @@ plt.title(f"conjunct-score regression coefficients, by connective ({MODEL_NAME})
 plt.grid(alpha=0.3)
 plt.legend(loc="upper left", bbox_to_anchor=(1.02, 1), borderaxespad=0, fontsize=8)
 plt.tight_layout()
-out_path = "figures/conjunct_regression_by_connective.png"
+out_path = "figures/compound_cities/conjunct_regression_by_connective.png"
 plt.savefig(out_path, dpi=150, bbox_inches="tight")
 print(f"saved {out_path}")

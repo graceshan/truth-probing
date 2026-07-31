@@ -75,8 +75,8 @@ plt.grid(alpha=0.3)
 plt.legend(loc="upper left", bbox_to_anchor=(1.02, 1), borderaxespad=0, fontsize=8)
 plt.tight_layout()
 
-os.makedirs("figures/transfer", exist_ok=True)
-out_path = "figures/transfer/cities_probe_on_compound.png"
+os.makedirs("figures/compound_cities", exist_ok=True)
+out_path = "figures/compound_cities/cities_probe_on_compound.png"
 plt.savefig(out_path, dpi=150, bbox_inches="tight")
 print(f"saved {out_path}")
 
@@ -100,7 +100,7 @@ fig.legend(handles, labels, title="conjunct pattern", loc="center left", bbox_to
 fig.suptitle(f"cities-trained probe on compound statements, by pattern ({MODEL_NAME})")
 fig.tight_layout()
 
-out_path = "figures/transfer/compound_scores_by_layer.png"
+out_path = "figures/compound_cities/compound_scores_by_layer.png"
 fig.savefig(out_path, dpi=150, bbox_inches="tight")
 print(f"saved {out_path}")
 
@@ -132,7 +132,7 @@ plt.grid(alpha=0.3)
 plt.legend(loc="upper left", bbox_to_anchor=(1.02, 1), borderaxespad=0, fontsize=8)
 plt.tight_layout()
 
-out_path = "figures/transfer/compound_scores_centered.png"
+out_path = "figures/compound_cities/compound_scores_centered.png"
 plt.savefig(out_path, dpi=150, bbox_inches="tight")
 print(f"saved {out_path}")
 
@@ -179,7 +179,7 @@ plt.grid(alpha=0.3)
 plt.legend(loc="upper left", bbox_to_anchor=(1.02, 1), borderaxespad=0, fontsize=8)
 plt.tight_layout()
 
-out_path = "figures/transfer/compound_relative_position.png"
+out_path = "figures/compound_cities/compound_relative_position.png"
 plt.savefig(out_path, dpi=150, bbox_inches="tight")
 print(f"saved {out_path}")
 
@@ -214,7 +214,7 @@ plt.grid(alpha=0.3)
 plt.legend(loc="upper left", bbox_to_anchor=(1.02, 1), borderaxespad=0, fontsize=8)
 plt.tight_layout()
 
-out_path = "figures/transfer/compound_spread.png"
+out_path = "figures/compound_cities/compound_spread.png"
 plt.savefig(out_path, dpi=150, bbox_inches="tight")
 print(f"saved {out_path}")
 
@@ -245,6 +245,6 @@ plt.grid(alpha=0.3)
 plt.legend(loc="upper left", bbox_to_anchor=(1.02, 1), borderaxespad=0, fontsize=8)
 plt.tight_layout()
 
-out_path = "figures/transfer/compound_order_effect.png"
+out_path = "figures/compound_cities/compound_order_effect.png"
 plt.savefig(out_path, dpi=150, bbox_inches="tight")
 print(f"saved {out_path}")

@@ -4,7 +4,7 @@ compound activations, vs. what the cities-trained probe achieves by
 transfer alone?
 
 Self-contained; does not import from or modify
-scripts/probe_compound_transfer.py or scripts/conjunct_regression.py.
+scripts/05_compound_analysis.py or scripts/06_conjunct_regression.py.
 """
 
 import os
@@ -115,12 +115,12 @@ for L in layers:
 
 results_df = pd.DataFrame(rows)
 
-os.makedirs("results", exist_ok=True)
-results_df.to_csv("results/capability_control.csv", index=False)
+os.makedirs("results/compound_cities", exist_ok=True)
+results_df.to_csv("results/compound_cities/capability_control.csv", index=False)
 print(results_df)
-print("saved results/capability_control.csv")
+print("saved results/compound_cities/capability_control.csv")
 
-os.makedirs("figures", exist_ok=True)
+os.makedirs("figures/compound_cities", exist_ok=True)
 
 plt.figure(figsize=(9, 6))
 for name, color in VARIANT_COLORS.items():
@@ -140,6 +140,6 @@ plt.title(f"compound capability control: fresh probes vs. cities transfer ({MODE
 plt.grid(alpha=0.3)
 plt.legend(loc="upper left", bbox_to_anchor=(1.02, 1), borderaxespad=0, fontsize=8)
 plt.tight_layout()
-out_path = "figures/capability_control.png"
+out_path = "figures/compound_cities/capability_control.png"
 plt.savefig(out_path, dpi=150, bbox_inches="tight")
 print(f"saved {out_path}")
