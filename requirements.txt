@@ -1,8 +1,8 @@
-torch
-transformer_lens
-transformers
-numpy
-pandas
-scikit-learn
-tqdm
-matplotlib
+torch==2.11.0
+transformer_lens==3.5.1  # Colab-only; installed fresh via notebooks/extract_colab.ipynb's own pip cell, not from this file
+transformers==5.12.1     # Colab-only, see above
+numpy==2.4.6
+pandas==3.0.3
+scikit-learn==1.9.0
+tqdm==4.69.0
+matplotlib==3.11.1
