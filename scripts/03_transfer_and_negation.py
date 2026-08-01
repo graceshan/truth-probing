@@ -5,6 +5,7 @@ is Spanish-English translation statements).
 """
 
 import argparse
+import csv
 import os
 
 import matplotlib.pyplot as plt
@@ -62,6 +63,17 @@ for label, accs in [
     print(f"--- {label} ---")
     for layer, acc in zip(layers, accs):
         print(f"layer {layer}: {acc:.4f}")
+
+results_dir = "results/transfer"
+os.makedirs(results_dir, exist_ok=True)
+results_path = f"{results_dir}/{DATASET_A}_{DATASET_B}_transfer.csv"
+with open(results_path, "w", newline="") as f:
+    writer = csv.writer(f)
+    writer.writerow(
+        ["layer", f"{DATASET_A}->{DATASET_A}", f"{DATASET_A}->{DATASET_B}", f"{DATASET_B}->{DATASET_B}", f"{DATASET_B}->{DATASET_A}"]
+    )
+    writer.writerows(zip(layers, acc_a_a, acc_a_b, acc_b_b, acc_b_a))
+print(f"saved {results_path}")
 
 plt.figure(figsize=(8, 5))
 plt.plot(layers, acc_a_a, color=BLUE, linestyle="-", marker="o", label=f"{DATASET_A}->{DATASET_A}")

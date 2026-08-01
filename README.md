@@ -75,7 +75,8 @@ resolves them fine via filesystem lookup):
 python -m scripts.00_generate_compounds       # regenerates data/compound_cities.csv
 python -m scripts.01_probe_accuracy_by_layer
 python -m scripts.02_shuffled_label_control
-python -m scripts.03_transfer_and_negation
+python -m scripts.03_transfer_and_negation             # cities/neg_cities (default args)
+python -m scripts.03_transfer_and_negation cities sp_en_trans
 python -m scripts.04_lr_vs_dim_comparison
 python -m scripts.05_compound_analysis
 python -m scripts.06_conjunct_regression
@@ -89,7 +90,7 @@ python -m scripts.07_capability_control
 | `00_generate_compounds.py` | — | `data/compound_cities.csv` |
 | `01_probe_accuracy_by_layer.py` | `probe_accuracy/*.png` | `results/*/accuracy.csv` |
 | `02_shuffled_label_control.py` | `control/*.png` | `results/*/control_accuracy.csv` |
-| `03_transfer_and_negation.py` | `transfer/cities_neg_cities_transfer.png`, `transfer/cities_sp_en_trans_transfer.png` | — |
+| `03_transfer_and_negation.py` | `transfer/cities_neg_cities_transfer.png`, `transfer/cities_sp_en_trans_transfer.png` | `transfer/cities_neg_cities_transfer.csv`, `transfer/cities_sp_en_trans_transfer.csv` |
 | `04_lr_vs_dim_comparison.py` | `auc_comparison/*.png` | `results/*/auc.csv` |
 | `05_compound_analysis.py` | `compound_cities/compound_*.png`, `compound_cities/cities_probe_on_compound.png` | `compound_cities/*.csv` |
 | `06_conjunct_regression.py` | `compound_cities/conjunct_regression*.png` | `compound_cities/conjunct_regression*.csv` |
