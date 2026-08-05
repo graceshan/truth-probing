@@ -47,3 +47,33 @@ and `figures/compound_cities/` (scripts: 05_compound_analysis.py,
 - Standardize compound scores against the cities distribution (z-score using
   the cities-trained probe's own decision_function mean/std).
 - Directions stored as unit vectors (`d / np.linalg.norm(d)`), positive = true.
+
+## Methods: how the source probe is fit, per script (write-up needs this exact)
+Two different conventions coexist, deliberately -- do not describe them as
+uniform:
+- **01, 02, 04** (within-dataset accuracy/AUROC/control): group-level
+  train/test split (by city / Spanish word, via `src.data.group_key` +
+  `src.probes.split_indices(..., groups=...)`), aggregated across 5 seeds
+  (mean + t-distribution 95% CI, `src.stats.seed_mean_ci`). Row-level
+  splitting could let the same city's true/false statement pair land on
+  both sides of the split; see `09_group_split_comparison.py` for the
+  row-vs-group comparison (max |accuracy difference| 0.09, at an early/
+  low-signal layer -- negligible from layer 10 on) that motivated the
+  switch.
+- **03, 05, 08** (cross-dataset transfer / compound analysis): the cities
+  source probe fits on **all** of cities (`fit_probe`, no held-out split)
+  every time it's used, since the evaluation set is an entirely different
+  dataset -- no need to hold out part of the source domain. Uncertainty
+  comes from evaluation-side bootstrap instead (resample the eval set,
+  1000 resamples, percentile interval), with the source probe held fixed.
+- **06** (conjunct regression) is the odd one out: it fits the cities probe
+  via `train_layer_probe` on the standard 80/20 (row-level) split, *not*
+  `fit_probe` on all of cities like 03/05/08 -- an existing inconsistency,
+  left as-is rather than "fixed" to match, since changing how a script
+  fits its source probe was explicitly out of scope for the bootstrap
+  pass that added its coefficient CIs.
+- **10** (source_probe_stability, appendix-only) is the one place multiple
+  *source* probes are compared: fits the cities probe on 5 different 80%
+  group-level subsamples and reports how much transfer AUROC and the
+  weight vector itself vary. This is not the default anywhere else --
+  03/05/06/08 keep fitting on all of cities.
