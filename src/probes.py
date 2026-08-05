@@ -10,14 +10,27 @@ labels stay {0, 1}.
 
 import numpy as np
 from sklearn.linear_model import LogisticRegression
-from sklearn.model_selection import train_test_split
+from sklearn.model_selection import GroupShuffleSplit, train_test_split
 
 
-def split_indices(n_statements: int, test_size: float = 0.2, random_state: int = 0):
-    """One train/test split of statement indices, meant to be reused across every layer."""
-    return train_test_split(
-        np.arange(n_statements), test_size=test_size, random_state=random_state
-    )
+def split_indices(
+    n_statements: int, test_size: float = 0.2, random_state: int = 0, groups=None
+):
+    """One train/test split of statement indices, meant to be reused across every layer.
+
+    Row-level by default (plain train_test_split, the original behavior every
+    script in this project uses) -- pass `groups` (array of length
+    n_statements, e.g. city name) to split at the group level instead, via
+    GroupShuffleSplit, so no group's rows end up split across both train and
+    test (prevents entity-identity leakage: e.g. the same city's true and
+    false statements landing on opposite sides of the split).
+    """
+    if groups is None:
+        return train_test_split(
+            np.arange(n_statements), test_size=test_size, random_state=random_state
+        )
+    gss = GroupShuffleSplit(n_splits=1, test_size=test_size, random_state=random_state)
+    return next(gss.split(np.arange(n_statements), groups=groups))
 
 
 def train_layer_probe(
@@ -54,15 +67,20 @@ def normalized_coef(probe: LogisticRegression) -> np.ndarray:
 
 
 def train_all_layers(
-    acts: np.ndarray, labels: np.ndarray, test_size: float = 0.2, random_state: int = 0
+    acts: np.ndarray,
+    labels: np.ndarray,
+    test_size: float = 0.2,
+    random_state: int = 0,
+    groups=None,
 ) -> list[tuple[LogisticRegression, float]]:
     """Train one probe per layer of `acts` ([n_statements, n_layers, d_model]).
 
     Returns a list of (probe, test_accuracy), one entry per layer, all using
-    the same train/test split.
+    the same train/test split. Pass `groups` for a group-level split (see
+    split_indices) instead of the default row-level one.
     """
     train_idx, test_idx = split_indices(
-        len(labels), test_size=test_size, random_state=random_state
+        len(labels), test_size=test_size, random_state=random_state, groups=groups
     )
     n_layers = acts.shape[1]
     return [
