@@ -9,6 +9,13 @@ scripts/05_compound_analysis.py or scripts/06_conjunct_regression.py.
 
 import os
 
+# Must be set before numpy/sklearn load -- see 01_probe_accuracy_by_layer.py
+os.environ.setdefault("OMP_NUM_THREADS", "1")
+os.environ.setdefault("OPENBLAS_NUM_THREADS", "1")
+os.environ.setdefault("MKL_NUM_THREADS", "1")
+os.environ.setdefault("VECLIB_MAXIMUM_THREADS", "1")
+os.environ.setdefault("NUMEXPR_NUM_THREADS", "1")
+
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
@@ -21,6 +28,13 @@ from src.probes import fit_probe
 
 MODEL_NAME = "Qwen2.5-1.5B"
 VARIANT_COLORS = {"pooled": "#2a78d6", "and": "#e34948", "or": "#1baf7a"}
+# theoretical majority baseline by construction (pooled: 50% and/or 50/50 by
+# the truth table; and/or: 75% since only one of the four TT/TF/FT/FF cells
+# is the minority class) -- NOT the same as the empirical majority_baseline
+# column below, which is measured on the actual (stratified, rounded) test
+# split and can land a point or two off (e.g. 76% instead of 75%) from
+# integer rounding on a 160-row test set
+THEORETICAL_MAJORITY_BASELINE = {"pooled": 0.5, "and": 0.75, "or": 0.75}
 
 acts_cities, labels_cities = load_activations("cities")
 acts_compound, labels_compound = load_activations("compound_cities")
@@ -126,7 +140,7 @@ plt.figure(figsize=(9, 6))
 for name, color in VARIANT_COLORS.items():
     sub = results_df[results_df["variant"] == name]
     plt.plot(sub["layer"], sub["accuracy"], color=color, marker="o", label=f"{name} (fresh probe)")
-    plt.axhline(sub["majority_baseline"].iloc[0], color=color, linestyle=":", linewidth=1)
+    plt.axhline(THEORETICAL_MAJORITY_BASELINE[name], color=color, linestyle=":", linewidth=1)
 plt.plot([], [], color="gray", linestyle=":", label="majority baseline (per variant; pooled=50%, and/or=75%)")
 plt.axhline(0.5, color="gray", linestyle="--", label="chance")
 plt.axhline(
