@@ -143,10 +143,9 @@ for name, color in VARIANT_COLORS.items():
     plt.axhline(THEORETICAL_MAJORITY_BASELINE[name], color=color, linestyle=":", linewidth=1)
 plt.plot([], [], color="gray", linestyle=":", label="majority baseline (per variant; pooled=50%, and/or=75%)")
 plt.axhline(0.5, color="gray", linestyle="--", label="chance")
-plt.axhline(
-    connective_blind_ceiling, color="black", linestyle="-.", linewidth=1.5,
-    label=f"connective-blind ceiling ({connective_blind_ceiling:.0%}, pooled only)",
-)
+# connective-blind ceiling (computed/printed above) deliberately not plotted:
+# at ~76% it sits under a point above the 75% majority baseline, reading as
+# a single merged line at this scale rather than two distinct ones
 plt.plot(list(layers), cities_acc_by_layer, color="black", linestyle="--", marker="o", label="cities-trained probe (transfer)")
 plt.xlabel("layer")
 plt.ylabel("accuracy")
