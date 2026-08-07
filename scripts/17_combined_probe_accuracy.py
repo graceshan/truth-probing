@@ -30,6 +30,6 @@ plt.legend()
 plt.tight_layout()
 
 os.makedirs("figures/probe_accuracy", exist_ok=True)
-out_path = "figures/probe_accuracy/combined_probe_accuracy.png"
+out_path = "figures/probe_accuracy/all_datasets.png"
 plt.savefig(out_path, dpi=150)
 print(f"saved {out_path}")
