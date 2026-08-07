@@ -193,7 +193,7 @@ These results are a small-model phenomenon that may resolve with scale, but it i
 
 ## Acknowledgements
 
-Thank you to BlueDot for organizing the program, my cohort for the feedback and support, and Opus 5 for drafting the initial version of this write-up.
+Thank you to BlueDot for organizing the program, my cohort for the feedback and support, and Opus 5 for feedback on this write-up.
 
 ## References
 
