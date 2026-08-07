@@ -5,7 +5,7 @@ title: "A truth probe that doesn't track truth"
 
 # A truth probe that doesn't track truth: what linear probes actually encode at 1.5B
 
-*Grace Shan · BlueDot Impact Technical AI Safety, Project Sprint · [code and results](https://github.com/graceshan/truth-probing)*
+*Grace Shan · BlueDot Impact Technical AI Safety, 30 hour Project Sprint · [code and results](https://github.com/graceshan/truth-probing)*
 
 ## TL;DR
 
