@@ -39,7 +39,6 @@ When a probe is trained on an affirmative dataset like this one, it can score ne
 - **Model:** Qwen2.5-1.5B (base). 28 layers, d_model=1536, loaded in float16 via [TransformerLens](https://github.com/TransformerLensOrg/TransformerLens).
 - **Activations:** Residual stream after each of the 28 layers taken at the final token of each statement, following GoT.
 - **Linear probes:** Logistic regression (scikit-learn, `max_iter=2000`, `C=0.1`) per layer. The regularization is necessary since d_model > training data. Splits are group-level on the city identifier so no entity crosses train/test, within-dataset results are 5 seeds with 95% intervals, transfer results are bootstrap over the evaluation data because the source probe is fit once on all of the cities dataset.
-  - A linear probe is trained on the model's internal activations to predict a label. If it succeeds, the property is represented as a direction in activation space.
 - **Datasets:** Three from the [geometry-of-truth repository](https://github.com/saprmarks/geometry-of-truth) and one generated for this project.
 - **Repo for this project:** [graceshan/truth-probing](https://github.com/graceshan/truth-probing)
 
