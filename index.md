@@ -22,7 +22,7 @@ Linear probes on model activations are increasingly proposed as safety tools. Th
 
 Using probes to ensure safety rests on an implicit assumption: that the direction recovered from training data corresponds to some general notion of truth or honesty and not just a feature that correlates with truth in the data. The two can come apart. "The city of Tokyo is not in Italy" is a true sentence that contains an incorrect city-country pairing. In a dataset of affirmative statements, no example ever separates the two, so a probe trained there has no way to distinguish them and its accuracy score won't tell you which one it found.
 
-[Marks and Tegmark (2023)](https://arxiv.org/abs/2310.06824), hereafter GoT, found that probes trained on affirmative statements often fail on negated ones, and that the failure is worse in smaller models. [Bao et al. (2025)](https://arxiv.org/abs/2506.00823) confirmed this across model families and extended it to conjunctions and disjunctions. This project asks: what is the probe tracking instead, and do our metrics detect the difference?
+[Marks and Tegmark (2023)](https://arxiv.org/abs/2310.06824), hereafter GoT, found that probes trained on affirmative statements often fail on negated ones, and that the failure is worse in smaller models. [Bürger et al. (2024)](https://arxiv.org/abs/2407.12831) studied that failure, showing that inside a model, there are two separate things that both look like truth in affirmative data. One of them is a more general truth that holds up even if you add a negation. The other only holds up on affirmative data and labels the wrong way on negated statements. A probe trained only on affirmative statements can't tell the two apart so it learns a blend of both and inverts on negation. They call these the general truth direction and a polarity-sensitive direction. Their proposed fix is to train on both affirmative and negated statements across several topics in equal proportion and they report this generalizes to connectives (AND, OR statements), German, and real-world lies. I aim to study two main questions: 1) What is the polarity-sensitive direction actually reading and 2) When a probe scores well on connective statements, does it actually understand the compositional logic behind connectives?
 
 ## The two tests
 
@@ -128,7 +128,11 @@ Applying the *cities* probe without retraining, the ordering is TT > mixed > FF 
 
 ***Figure 4.** Where mixed patterns (TF, FT) sit on a scale from FF (0) to TT (1). The truth-conditional hypothesis predicts 0 under "and" and 1 under "or" (dotted lines). Both connectives sit near 0.5.*
 
-The AUROC shows the transferred probe reads the conjuncts well but not the operator. It achieves ~0.84–0.96 under AND alone, ~0.72–0.92 under OR alone, ~0.74–0.90 on a conjunct-count label, and ~0.50–0.82 pooled across connectives. The pooled number is the honest one as it's the only split where a single conjunct count (one-true, i.e. TF or FT) maps to both labels (true under OR, false under AND). Bao et al.'s AND and OR AUROCs are computed within connective, where conjunct-counting alone scores well (under AND the only true class (TT) has the most true conjuncts, under OR the only false class (FF) has the fewest). While their measurement is sound, it establishes less than it appears to.
+The AUROC shows the transferred probe reads the conjuncts well but not the operator. It achieves ~0.84–0.96 under AND alone, ~0.72–0.92 under OR alone, ~0.74–0.90 on a conjunct-count label, and ~0.50–0.82 pooled across connectives. The pooled number is the honest one as it's the only split where a single conjunct count (one-true, i.e. TF or FT) maps to both labels (true under OR, false under AND).
+
+Both Bürger et al. and [Bao et al. (2025)](https://arxiv.org/abs/2506.00823) evaluate compound statements within-connective, where conjunct-counting alone scores well (under AND the only true class (TT) has the most true conjuncts, under OR the only false class (FF) has the fewest). For Bürger et al. this matters more, because they use those scores as evidence that the general truth direction extends to statement types it was not trained on.
+
+My *cities* probe, which I show below is blind to the connective, still reaches high within-connective AUROC (0.84–0.96 within AND and 0.72–0.92 within OR). A score in that range does not establish that a direction reads the connective. The pooled split is what separates the two accounts and I have not found it reported.
 
 ![Cities-trained probe on compounds, accuracy vs AUROC](figures/transfer_auroc_compound.png)
 
@@ -168,7 +172,13 @@ If the problem is that truth and factual association are perfectly correlated in
 
 However, it generalizes to compounds not much better than the original. The union probe transfers to compounds at AUROC 0.41–0.78 while the *cities* probe achieved an AUROC of 0.50–0.82.
 
-Therefore, adding in negations to the training data did produce a different direction that was now able to handle negations. However, the fix is local and doesn't generalize to compounds.
+Adding in negations to the training data did produce a different direction that handles negations, but this new direction still does not handle compounds. That result does not match [Bürger et al. (2024)](https://arxiv.org/abs/2407.12831), who make the same move and report that it generalizes across connectives.
+
+However, our metrics may not be comparable. My evaluation pools across connectives and theirs is within-connective, which is an easier test. It is possible to have high within-connective AUROC scores and low pooled scores: my *cities* probe, which the per-cell breakdown above shows is blind to the connective, still reaches 0.84–0.96 within AND and 0.72–0.92 within OR while only achieving 0.50–0.82 pooled.
+
+If the results still disagree after that, two other differences could explain it. I use a single topic (*cities*) while they balance across 6 topics. Their analysis shows single-topic training leaves topic-specific features correlated with truth. I also use a much smaller model (Qwen2.5-1.5B) than them (7B–27B).
+
+The claim I can support is limited: the union probe did not transfer to a pooled compound test at 1.5B under single-topic training.
 
 ## Implications for AI safety
 
@@ -199,6 +209,8 @@ Thank you to BlueDot for organizing the program, my cohort for the feedback and 
 ## References
 
 Bao, Y. et al. (2025). [Probing the Geometry of Truth: Consistency and Generalization of Truth Directions in LLMs Across Logical Transformations and Question Answering Tasks](https://arxiv.org/abs/2506.00823). arXiv:2506.00823.
+
+Bürger, L., Hamprecht, F. A. and Nadler, B. (2024). [Truth is Universal: Robust Detection of Lies in LLMs](https://arxiv.org/abs/2407.12831). arXiv:2407.12831.
 
 MacDiarmid, M. et al. (2024). [Simple probes can catch sleeper agents](https://www.anthropic.com/research/probes-catch-sleeper-agents). Anthropic.
 
