@@ -194,7 +194,7 @@ This project uses factual-statement data and no deception data, so the link from
 
 I have two recommendations: 1) Evaluation should use structures held out from training, since those are the only way to detect the confounds you didn't anticipate and to know if a fix worked and 2) Training data should be built to break the correlations you can anticipate so the probe is forced toward a more general feature. The caveat is that the effect is measurably local.
 
-These results are from a 1.5B base model, which sits at the weak end of the capability range Bao et al. examined. Their finding that generalization improves with model strength suggests this specific failure may not persist in frontier systems.
+These results are from a 1.5B base model, which sits below the range either paper examined. Bao et al. find that generalization improves with model strength, and Bürger et al. report their two-dimensional structure holding from 7B–27B, so this specific failure may not persist in frontier systems.
 
 ## Conclusion
 
