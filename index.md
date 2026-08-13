@@ -106,8 +106,8 @@ I generated compound statements by joining two *cities* facts across four conjun
 
 By applying the *cities*-trained probe without retraining, I aim to distinguish between two hypotheses.
 
-1. **Truth-conditional:** the model is actually tracking truth, regardless of logical structure.
-2. **Association-counting:** the model ignores logical connectives.
+1. **Truth-conditional:** the probe is actually tracking truth, regardless of logical structure.
+2. **Association-counting:** the probe ignores logical connectives.
 
 For the experiment, I calculate compound scores using the probe's `decision_function` output, z-scored against the distribution of *cities* scores at the same layer, so that layers are comparable and zero corresponds to the average atomic statement. In general terms, the sign of the score corresponds to whether the model thinks the statement is true (positive = true) and the magnitude of the score represents confidence. Each of two hypotheses make distinct predictions on the compound scores.
 
@@ -132,7 +132,7 @@ The AUROC shows the transferred probe reads the conjuncts well but not the opera
 
 Both Bürger et al. and [Bao et al. (2025)](https://arxiv.org/abs/2506.00823) evaluate compound statements within-connective, where conjunct-counting alone scores well (under AND the only true class (TT) has the most true conjuncts, under OR the only false class (FF) has the fewest). For Bürger et al. this matters more, because they use those scores as evidence that the general truth direction extends to statement types it was not trained on.
 
-My *cities* probe, which I show below is blind to the connective, still reaches high within-connective AUROC (0.84–0.96 within AND and 0.72–0.92 within OR). A score in that range does not establish that a direction reads the connective. The pooled split is what separates the two accounts and I have not found it reported.
+My *cities* probe, which Figure 4 shows is blind to the connective, still reaches high within-connective AUROC (0.84–0.96 within AND and 0.72–0.92 within OR). A score in that range does not establish that a direction reads the connective. The pooled split is what separates the two accounts and I have not found it reported.
 
 ![Cities-trained probe on compounds, accuracy vs AUROC](figures/transfer_auroc_compound.png)
 
@@ -192,7 +192,7 @@ This project uses factual-statement data and no deception data, so the link from
 
 4. **The probes used for deception haven't been stress-tested on this axis.** MacDiarmid et al. tested generalization in some areas (across base models, triggers, sleeper-agent training methods, and defection behaviors). However, these are all output variations, not input variations. Input form is the axis I varied and found the most failures. My results don't establish that their contrast-pair probes fail on input form, only that the question hasn't been asked.
 
-I have two recommendations: 1) Evaluation should use structures held out from training, since those are the only way to detect the confounds you didn't anticipate and to know if a fix worked and 2) Training data should be built to break the correlations you can anticipate so the probe is forced toward a more general feature.
+I have two recommendations: 1) Evaluation should use structures held out from training, since those are the only way to detect the confounds you didn't anticipate and to know if a fix worked and 2) Following Bürger et al., training data should be built to break the correlations you can anticipate so the probe is forced toward a more general feature. My union probe reproduces this for negation but it did not extend to compounds at 1.5B on a single topic.
 
 These results are from a 1.5B base model, which sits below the range either paper examined. Bao et al. find that generalization improves with model strength, and Bürger et al. report their two-dimensional structure holding from 7B–27B, so this specific failure may not persist in frontier systems.
 
